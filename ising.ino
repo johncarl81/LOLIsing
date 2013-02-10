@@ -1,6 +1,6 @@
 #include <Charliplexing.h>   
 
-#define DELAY 0
+#define DELAY 10
 #define RESEEDRATE 100000
 #define SCREENX 14
 #define SCREENY 9
@@ -25,8 +25,6 @@ void setup() {
 
 void loop() {
   
-  for(int i = 0; i < 100; i++){
-  
   int x = random(SIZEX);
   int y = random(SIZEY);
   
@@ -45,10 +43,8 @@ void loop() {
   else{
     setWorld(x, y, 0);
   }
-  }
-  
-  update();
-  //update(x,y);
+    
+  update(x,y);
   
   //Counts and then checks for re-seeding
   //Otherwise the display will die out at some point
