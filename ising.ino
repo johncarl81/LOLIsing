@@ -16,17 +16,16 @@
     along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-#include <Charliplexing.h>   
+#include <Charliplexing.h>
 
-#define DELAY 0
 #define RESEEDRATE 100000
 #define SCREENX 14
 #define SCREENY 9
 #define SCALEX 4
-#define SCALEY 6
+#define SCALEY 4
 
 #define SIZEX 56 // SCREENX * SCALEX
-#define SIZEY 54 // SCREENY * SCALEY
+#define SIZEY 36 // SCREENY * SCALEY
 
 //using bitwise operations so SCALEX (4) is incorpoated into byte
 byte worldArray[SCREENX * SIZEY];
@@ -36,7 +35,7 @@ double shadesScale = (SCALEX * SCALEY) * 1.0 / SHADES;
  
 void setup() {
   LedSign::Init(GRAYSCALE);
-  randomSeed(analogRead(5));
+  randomSeed(analogRead(0));
   //set up random world
   seedWorld();
 }
@@ -44,8 +43,8 @@ void setup() {
 void loop() {
   
   // Pick a random location to calculte a probability.
-  int x = random(SIZEX);
-  int y = random(SIZEY);
+  int x = random(0, SIZEX);
+  int y = random(0, SIZEY);
   
   double neighbors = 0;
   
@@ -73,22 +72,21 @@ void loop() {
     seedWorld();
     loopvar = 0;
   }
-  
-  delay(DELAY);
 }
 
 // Update the given pixel location.
 void update(int x, int y){
   
-  
   int scaledx = x / SCALEX;
   int scaledy = y / SCALEY;
   
+  int xoffset = SCALEX * scaledx;
+  int yoffset = SCALEY * scaledy;
   // Sum the local pixels around the scaled location.
   int total = 0;
   for(int i = 0; i < SCALEX; i++){
     for(int j = 0; j < SCALEY; j++){
-      total += world(scaledx + i, scaledy + j);
+      total += world(xoffset + i, yoffset + j);
     }
   }
  
@@ -106,12 +104,7 @@ int map0neg(int input){
 
 // Wrap the input around the m (modulus) value turning the array into a Torus.
 int wrap(int input, int m){
- if(input < 0){
-  return m-1;
- }
- else{ 
-   return input % m;
- }
+  return (input + m) % m;
 }
 
 //Re-seeds based off of RESEEDRATE
