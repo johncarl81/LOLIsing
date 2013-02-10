@@ -28,7 +28,7 @@
 #define SIZEY 36 // SCREENY * SCALEY
 
 //using bitwise operations so SCALEX (4) is incorpoated into byte
-byte worldArray[SCREENX * SIZEY];
+byte worldArray[(SIZEX / 4) * SIZEY];
 long density = 50;
 int loopvar = 0;
 double shadesScale = (SCALEX * SCALEY) * 1.0 / SHADES;
