@@ -1,3 +1,21 @@
+/*
+    LOL Ising Model for the Arduino Micro-Controller
+    Copyright (C) 2013 John Ericksen
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 #include <Charliplexing.h>   
 
 #define DELAY 0
@@ -6,25 +24,26 @@
 #define SCREENY 9
 #define SCALEX 4
 #define SCALEY 6
-#define SIZEX SCREENX * SCALEX
-#define SIZEY SCREENY * SCALEY
 
+#define SIZEX 56 // SCREENX * SCALEX
+#define SIZEY 54 // SCREENY * SCALEY
+
+//using bitwise operations so SCALEX (4) is incorpoated into byte
 byte worldArray[SCREENX * SIZEY];
 long density = 50;
 int loopvar = 0;
 double shadesScale = (SCALEX * SCALEY) * 1.0 / SHADES;
-
  
 void setup() {
   LedSign::Init(GRAYSCALE);
   randomSeed(analogRead(5));
-  //Builds the world with an initial seed.
-  Serial.begin(9600);
+  //set up random world
   seedWorld();
 }
 
 void loop() {
   
+  // Pick a random location to calculte a probability.
   int x = random(SIZEX);
   int y = random(SIZEY);
   
@@ -37,17 +56,18 @@ void loop() {
   
   double prob = exp(neighbors) / (exp(-neighbors) + exp(neighbors));
   
+  // ...and use that probability to update.
   if(prob > (random(1000) / 1000.0)){
     setWorld(x, y, 1);
   }
   else{
     setWorld(x, y, 0);
   }
-    
+  
+  // Update the related pixel  
   update(x,y);
   
-  //Counts and then checks for re-seeding
-  //Otherwise the display will die out at some point
+  // Block to reseed at the given rate
   loopvar++;
   if (loopvar > RESEEDRATE){
     seedWorld();
@@ -57,11 +77,14 @@ void loop() {
   delay(DELAY);
 }
 
+// Update the given pixel location.
 void update(int x, int y){
+  
+  
   int scaledx = x / SCALEX;
   int scaledy = y / SCALEY;
   
- 
+  // Sum the local pixels around the scaled location.
   int total = 0;
   for(int i = 0; i < SCALEX; i++){
     for(int j = 0; j < SCALEY; j++){
@@ -69,9 +92,11 @@ void update(int x, int y){
     }
   }
  
-  LedSign::Set(scaledx, scaledy, total / shadesScale); 
+ // Set the pixel location to the shade value.
+ LedSign::Set(scaledx, scaledy, total / shadesScale); 
 }
 
+// Maps 1 -> 1 and 0 -> -1
 int map0neg(int input){
   if(input == 0){
     return -1;
@@ -79,6 +104,7 @@ int map0neg(int input){
   return 1;
 }
 
+// Wrap the input around the m (modulus) value turning the array into a Torus.
 int wrap(int input, int m){
  if(input < 0){
   return m-1;
@@ -101,10 +127,7 @@ void seedWorld(){
     }
   }
   
-  update();
-}
-
-void update(){
+  // Update the entire scren.
   for (int i = 0; i < SCREENX; i++) {
     for (int j = 0; j < SCREENY; j++) {
       update(i * SCALEX,j * SCALEY);
@@ -112,6 +135,7 @@ void update(){
   }
 }
 
+// Set a bit at the given location.
 byte setWorld(int x, int y, byte input){
   
   int xRef = x / 4;
@@ -120,6 +144,7 @@ byte setWorld(int x, int y, byte input){
   bitWrite(worldArray[(xRef * SIZEY) + y], xBit, input);
 }
 
+// Get a bit from the given location.
 byte world(int x, int y){
   
   int xRef = x / 4;
