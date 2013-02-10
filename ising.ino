@@ -1,6 +1,6 @@
 #include <Charliplexing.h>   
 
-#define DELAY 10
+#define DELAY 0
 #define RESEEDRATE 100000
 #define SCREENX 14
 #define SCREENY 9
